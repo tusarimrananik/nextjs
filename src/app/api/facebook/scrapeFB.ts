@@ -1,7 +1,7 @@
 import { Page } from 'puppeteer';
 import { fbProfileSelectors } from './lib/selectors';
 
-export const scrapeFacebook = async (page: Page): Promise<Record<string, any>> => {
+export const scrapeFacebook = async (page: Page): Promise<Record<string, unknown>> => {
     try {
         // Wait concurrently for all selectors (with a visible flag to ensure they’re rendered)
         const waitResults = await Promise.allSettled(
