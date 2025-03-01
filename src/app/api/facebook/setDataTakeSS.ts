@@ -1,7 +1,10 @@
 import { Page, ElementHandle } from "puppeteer";
 
-export default async function setDataTakeSS(scrapedData: Record<string, any>, page: Page) {
-    await page.evaluate(async (scrapedData) => {
+export default async function setDataTakeSS(scrapedData: Record<string, any>, page: Page, time: string) {
+
+
+    console.log(scrapedData.friendsGrid);
+    await page.evaluate(async (scrapedData, time) => {
         const {
             profileName,
             profilePicture,
@@ -11,7 +14,11 @@ export default async function setDataTakeSS(scrapedData: Record<string, any>, pa
             isLocked,
             hasStory,
             about,
+            friendsGrid
         } = scrapedData;
+
+
+
 
         // Direct DOM element selection using literal selectors.
         const profileNameEl = document.querySelector('#mainName') as HTMLElement;
@@ -24,6 +31,59 @@ export default async function setDataTakeSS(scrapedData: Record<string, any>, pa
         const statusPicEl = document.querySelector('#statusPic') as HTMLImageElement;
         const friendsCountEl = document.querySelector('#friendsNumber') as HTMLElement;
         const friendsTypeEl = document.querySelector('#friendsText') as HTMLElement;
+        const friendsGridEl = document.querySelector('.friendsListGrid') as HTMLElement;
+        const friendsGridCountEl = document.querySelector('.seeAllFriendsText') as HTMLElement;
+        const timeDisplayEl = document.querySelector('#timeDisplay') as HTMLElement;
+
+        if (time && timeDisplayEl) {
+            const [hours, minutes] = time.split(':');
+            const hour = parseInt(hours);
+            const hour12 = hour % 12 || 12;
+            const formattedTime = `${hour12}:${minutes}`;
+            timeDisplayEl.innerText = formattedTime;
+            await waitForElementVisibility(timeDisplayEl);
+        }
+
+
+
+        if (friendsGrid && friendsGridEl && friends) {
+            friendsGridEl.innerHTML = friendsGrid;
+            friendsGridCountEl.innerText = `${friends.count} friends` || '';
+            await waitForElementVisibility(friendsGridEl);
+            const gridImages = friendsGridEl.querySelectorAll('img');
+            await Promise.all(Array.from(gridImages).map(img =>
+                new Promise<void>((resolve) => {
+                    if (img.complete) {
+                        resolve();
+                    } else {
+                        img.onload = () => resolve();
+                        img.onerror = () => resolve();
+                    }
+                })
+            ));
+        } else {
+            friendsGridEl.classList.add('hidden');
+            friendsGridCountEl.classList.add('hidden');
+        }
+
+
+        // Update friends count and type if available.
+        if (friends && friendsCountEl && friendsTypeEl) {
+
+            if (friends.count) {
+                console.log(friends.count);
+                friendsCountEl.innerText = (friends.count || '').toString().toUpperCase();
+                friendsTypeEl.innerText = friends.type || '';
+                await Promise.all([
+                    waitForElementVisibility(friendsCountEl),
+                    waitForElementVisibility(friendsTypeEl)
+                ]);
+            } else {
+                friendsCountEl.classList.add('hidden');
+                friendsTypeEl.classList.add('hidden');
+                friendsGridCountEl.classList.add('hidden');
+            }
+        }
 
 
         // Wait until an element is visible (polls every 100ms up to timeout)
@@ -101,21 +161,6 @@ export default async function setDataTakeSS(scrapedData: Record<string, any>, pa
             }
         }
 
-        // Update friends count and type, or hide elements.
-        if (friends && friendsCountEl && friendsTypeEl) {
-            if (friends.count) {
-                friendsCountEl.innerText = (friends.count.count || '').toString().toUpperCase();
-                friendsTypeEl.innerText = friends.count.type || '';
-                await Promise.all([
-                    waitForElementVisibility(friendsCountEl),
-                    waitForElementVisibility(friendsTypeEl)
-                ]);
-            } else {
-                friendsCountEl.classList.add('hidden');
-                friendsTypeEl.classList.add('hidden');
-            }
-        }
-
         // Toggle lock status.
         if (isLockedEl) {
             if (isLocked) {
@@ -130,7 +175,7 @@ export default async function setDataTakeSS(scrapedData: Record<string, any>, pa
         if (profilePictureEl) {
             profilePictureEl.classList.toggle('hasStory', Boolean(hasStory));
         }
-        
+
         if (about && aboutEl) {
             await waitForElementVisibility(aboutEl);
             aboutEl.insertAdjacentHTML('afterbegin', about);
@@ -159,7 +204,7 @@ export default async function setDataTakeSS(scrapedData: Record<string, any>, pa
             }));
         }
 
-    }, scrapedData);
+    }, scrapedData, time);
 
     const screenshotBuffer = await takeScreenshot(page);
     return screenshotBuffer;

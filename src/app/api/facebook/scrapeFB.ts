@@ -11,19 +11,22 @@ export const scrapeFacebook = async (page: Page): Promise<Record<string, unknown
         );
 
         // Log warnings if any selector did not appear
-        // Object.values(fbProfileSelectors).forEach((selector, idx) => {
-        //     if (waitResults[idx].status === 'rejected') {
-        //         console.warn(`Warning: Selector "${selector}" did not load:`, waitResults[idx]);
-        //     }
-        // });
+        Object.entries(fbProfileSelectors).forEach(([key, selector], idx) => {
+            if (waitResults[idx].status === 'rejected') {
+                console.warn(`Selector "${key}" did not load`);
+            }
+        });
 
         // Evaluate and extract data in the browser context
-        const scrapedData = await page.evaluate((selectors: Record<string, string>) => {
+        const scrapedData = await page.evaluate(async (selectors: Record<string, string>) => {
             // Helper function to get trimmed text content
             const getText = (sel: string): string => {
                 const el = document.querySelector(sel);
                 return el ? (el.textContent || '').trim() : '';
             };
+
+
+
 
             const profileName = getText(selectors.profileName);
 
@@ -37,6 +40,8 @@ export const scrapeFacebook = async (page: Page): Promise<Record<string, unknown
 
             const bioEl = document.querySelector(selectors.bio);
             const bio = bioEl ? bioEl.innerHTML : null;
+
+
 
             let friends = null;
             const friendsEl = document.querySelector(selectors.friends);
@@ -52,6 +57,41 @@ export const scrapeFacebook = async (page: Page): Promise<Record<string, unknown
                     };
                 }
             }
+
+
+
+
+            // Friends grid scraping with scroll
+            let friendsGrid: string | null = null;
+            if (friendsEl) {
+                const maxScrollAttempts = 5;
+                const scrollIncrement = 500;
+                let attempts = 0;
+                let collectedItems: string[] = [];
+
+                while (attempts < maxScrollAttempts && collectedItems.length < 6) {
+                    window.scrollBy(0, scrollIncrement);
+                    await new Promise(resolve => setTimeout(resolve, 1500)); // Wait for content load
+
+                    const elements = Array.from(document.querySelectorAll(selectors.friendsGrid));
+                    const newItems = elements
+                        .slice(collectedItems.length, 6) // Get new items up to max 6
+                        .map(el => el.outerHTML);
+
+                    if (newItems.length > 0) {
+                        collectedItems = [...collectedItems, ...newItems];
+                    }
+
+                    attempts++;
+                    if (collectedItems.length >= 6) break;
+                }
+
+                friendsGrid = collectedItems.length > 0 ? collectedItems.join('') : null;
+            }
+
+
+
+
 
             const isLocked = !!document.querySelector(selectors.isLocked);
             const hasStory = !!document.querySelector(selectors.hasStory);
@@ -73,7 +113,8 @@ export const scrapeFacebook = async (page: Page): Promise<Record<string, unknown
                 friends,
                 isLocked,
                 hasStory,
-                about
+                about,
+                friendsGrid
             };
         }, fbProfileSelectors);
 

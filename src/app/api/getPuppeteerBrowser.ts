@@ -43,11 +43,18 @@ export default async function getPuppeteerBrowser(
         launchOptions.args = args;
     }
 
+
+
+    //CHNAGE HERE TO SWITCH BROWSER
+
     // const browser: Browser = await puppeteer.launch(launchOptions);
 
     const browser = await puppeteer.connect({
         browserWSEndpoint: `wss://production-sfo.browserless.io?token=${process.env.BROWSERLESS_TOKEN}`,
     });
+
+
+
 
     // Reuse an existing page if available.
     const pages: Page[] = await browser.pages();
