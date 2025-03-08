@@ -24,10 +24,6 @@ export const scrapeFacebook = async (page: Page): Promise<Record<string, unknown
                 const el = document.querySelector(sel);
                 return el ? (el.textContent || '').trim() : '';
             };
-
-
-
-
             const profileName = getText(selectors.profileName);
 
             const profilePictureNodes = document.querySelectorAll(selectors.profilePicture);
@@ -40,8 +36,6 @@ export const scrapeFacebook = async (page: Page): Promise<Record<string, unknown
 
             const bioEl = document.querySelector(selectors.bio);
             const bio = bioEl ? bioEl.innerHTML : null;
-
-
 
             let friends = null;
             const friendsEl = document.querySelector(selectors.friends);
@@ -58,9 +52,6 @@ export const scrapeFacebook = async (page: Page): Promise<Record<string, unknown
                 }
             }
 
-
-
-
             // Friends grid scraping with scroll
             let friendsGrid: string | null = null;
             if (friendsEl) {
@@ -68,7 +59,6 @@ export const scrapeFacebook = async (page: Page): Promise<Record<string, unknown
                 const scrollIncrement = 500;
                 let attempts = 0;
                 let collectedItems: string[] = [];
-
                 while (attempts < maxScrollAttempts && collectedItems.length < 6) {
                     window.scrollBy(0, scrollIncrement);
                     await new Promise(resolve => setTimeout(resolve, 1500)); // Wait for content load
@@ -88,10 +78,6 @@ export const scrapeFacebook = async (page: Page): Promise<Record<string, unknown
 
                 friendsGrid = collectedItems.length > 0 ? collectedItems.join('') : null;
             }
-
-
-
-
 
             const isLocked = !!document.querySelector(selectors.isLocked);
             const hasStory = !!document.querySelector(selectors.hasStory);

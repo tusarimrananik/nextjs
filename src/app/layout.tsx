@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { JetBrains_Mono } from 'next/font/google';
+import Navbar from "@/components/Navbar"
+import { SessionProvider } from "next-auth/react";
+import QueryProvider from "@/components/QueryProvider";
+
 
 const jetBrainsMono = JetBrains_Mono({
   variable: '--font-hacker',
@@ -24,11 +28,24 @@ export default function RootLayout({
 
 
     <html lang="en" className="dark">
-      <body
-        className={`${jetBrainsMono.variable} ${jetBrainsMono.variable} antialiased`}
-      >
-        {children}
-      </body>
+
+      <SessionProvider>
+
+
+        <body
+          className={`${jetBrainsMono.variable} ${jetBrainsMono.variable} antialiased`}
+        >
+          <Navbar />
+
+
+          <QueryProvider>
+            {children}
+          </QueryProvider>
+
+        </body>
+
+      </SessionProvider>
+
     </html >
   );
 }

@@ -20,7 +20,7 @@ import puppeteer, { Browser, Page, Cookie, LaunchOptions } from 'puppeteer';
 export default async function getPuppeteerBrowser(
     site: string,
     cookie?: Cookie[],
-    isHeadless: boolean = false,
+    isHeadless: boolean = true,
     executablePath?: string,
     userDataDir?: string,
     args?: string[],
@@ -47,11 +47,11 @@ export default async function getPuppeteerBrowser(
 
     //CHNAGE HERE TO SWITCH BROWSER
 
-    // const browser: Browser = await puppeteer.launch(launchOptions);
+    const browser: Browser = await puppeteer.launch(launchOptions);
 
-    const browser = await puppeteer.connect({
-        browserWSEndpoint: `wss://production-sfo.browserless.io?token=${process.env.BROWSERLESS_TOKEN}`,
-    });
+    // const browser = await puppeteer.connect({
+    //     browserWSEndpoint: `wss://production-sfo.browserless.io?token=${process.env.BROWSERLESS_TOKEN}`,
+    // });
 
 
 

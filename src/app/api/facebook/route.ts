@@ -14,6 +14,7 @@ export async function POST(request: NextRequest) {
     //Here you can use any site to set data and take screenshot from
     // await page.goto("https://tusarimrananik.github.io/FacebookUI")
     await page.goto(`${process.env.BASE_URL}/FacebookUI/index.html`)
+    // await page.goto("https://nextjs-v5gi.onrender.com/FacebookUI/index.html")
     const screenshotBuffer = await setDataTakeSS(scrapedData, page, time)
 
     await page.close();
